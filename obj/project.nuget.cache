@@ -1,8 +1,29 @@
 {
   "version": 2,
-  "dgSpecHash": "kumi5yBjnrxeg/Qrb9v4qOALrqiiTwaKQdiUxHZDNkoc2BXiy7/znwEyQxTNs+WPMvU/qMN77KRCR0VNPmI4yw==",
+  "dgSpecHash": "7NSaGTT/BxHx394evAQYCfmPvW6SpEK5RUoXueqEEjdhsaWwlh/QpOEwBDbHRDink9O/XGGMBkhu4UNYNsEupA==",
   "success": true,
   "projectFilePath": "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj",
-  "expectedPackageFiles": [],
-  "logs": []
+  "expectedPackageFiles": [
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\barcodelib\\2.4.0\\barcodelib.2.4.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\microsoft.win32.systemevents\\5.0.0\\microsoft.win32.systemevents.5.0.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\neodynamic.sdk.thermallabel\\12.0.0\\neodynamic.sdk.thermallabel.12.0.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\neodynamic.sdk.thermallabel.windowsprinting\\12.0.0\\neodynamic.sdk.thermallabel.windowsprinting.12.0.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\skiasharp\\1.60.0\\skiasharp.1.60.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\system.drawing.common\\5.0.2\\system.drawing.common.5.0.2.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\system.text.encoding.codepages\\4.4.0\\system.text.encoding.codepages.4.4.0.nupkg.sha512",
+    "C:\\Users\\MrTroxy\\.nuget\\packages\\system.text.json\\5.0.2\\system.text.json.5.0.2.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Le package 'Neodynamic.SDK.ThermalLabel.WindowsPrinting 12.0.0' a été restauré en utilisant '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' au lieu du framework cible du projet 'net6.0-windows7.0'. Ce package n'est peut-être pas totalement compatible avec votre projet.",
+      "libraryId": "Neodynamic.SDK.ThermalLabel.WindowsPrinting",
+      "targetGraphs": [
+        "net6.0-windows7.0"
+      ]
+    }
+  ]
 }
