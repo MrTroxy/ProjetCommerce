@@ -1,4 +1,5 @@
 using BarcodeLib;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Drawing.Printing;
 using System.Text;
@@ -7,6 +8,9 @@ namespace ProjetCommerce
 {
     public partial class Form1 : Form
     {
+        bool usagerConnecte = false;
+        string token = "";
+
         public Form1()
         {
             InitializeComponent();
@@ -68,6 +72,7 @@ namespace ProjetCommerce
         private void Form1_Load(object sender, EventArgs e)
         {
             edtItemSanne.Focus();
+            AcceptButton = btnConnexion;
         }
 
         private void edtItemSanne_KeyPress(object sender, KeyPressEventArgs e)
@@ -117,5 +122,134 @@ namespace ProjetCommerce
                 }
             }
         }
+
+        private async void btnConnexion_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Créer un client HTTP
+                var httpClient = new HttpClient();
+
+                // Créer les paramètres de la requête POST
+                var parametres = new Dictionary<string, string>
+                {
+                    { "usager", edtUsager.Text },
+                    { "mot_de_passe", edtMotDePasse.Text }
+                };
+
+                // Encodage des paramètres en tant que contenu de la requête
+                var contenu = new FormUrlEncodedContent(parametres);
+
+                // Envoyer la requête POST à l'API de connexion
+                var reponse = await httpClient.PostAsync("http://api.qc-ca.ovh:2222/api/connexion", contenu);
+                var reponseContenu = await reponse.Content.ReadAsStringAsync();
+                var resultat = JsonConvert.DeserializeObject<dynamic>(reponseContenu);
+                // Vérifier si la connexion a réussi ou non
+                if (reponse.IsSuccessStatusCode)
+                {
+                    // Stocker le token d'authentification
+                    usagerConnecte = true;
+                    token = resultat.token;
+
+                    // Changer de page
+                    panelConnexion.Visible = false;
+                    panelGestion.Visible = true;
+                    edtItemSanne.Focus();
+                    AcceptButton = btnAjouter;
+
+                    // Utiliser le token pour accéder à d'autres ressources protégées
+                    //MessageBox.Show("Connexion réussie !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    // Afficher le message d'erreur
+                    MessageBox.Show("Erreur : " + resultat.message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Gérer les erreurs éventuelles
+                MessageBox.Show(ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl1.SelectedIndex == 0)
+            {
+                edtItemSanne.Focus();
+            }
+        }
+
+        private void btnImprimerCodeBarre_Click(object sender, EventArgs e)
+        {
+            string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + edtTexteCodeBarre.Text + ".png";
+            // Charger l'image à imprimer
+            var image = Image.FromFile(chemin);
+
+            // Calculer la largeur et la hauteur de l'image réduite
+            var factor = 0.5f; // Facteur de réduction de l'image
+            var width = (int)(image.Width * factor);
+            var height = (int)(image.Height * factor);
+
+            // Créer un nouveau document d'impression
+            var document = new PrintDocument();
+
+            // Gérer l'événement PrintPage pour dessiner l'image sur la page
+            document.PrintPage += (s, ev) =>
+            {
+                // Dessiner l'image réduite sur la page
+                ev.Graphics.DrawImage(image, new Rectangle(0, 0, width, height));
+            };
+
+            // Afficher la boîte de dialogue d'impression
+            var printDialog = new PrintDialog();
+            printDialog.Document = document;
+            if (printDialog.ShowDialog() == DialogResult.OK)
+            {
+                document.Print();
+            }
+        }
+
+        private async void btnAjouterProduit_Click(object sender, EventArgs e)
+        {
+            // Récupérer les valeurs des champs nom, description et prix
+            var nom = edtNomProduit.Text;
+            var prix = double.Parse(edtPrixProduit.Text);
+            var description = edtDescriptionProduit.Text;
+
+            var url = "http://api.qc-ca.ovh:2222/api/ajouter/produit";
+
+            // Créer un objet HttpClient
+            using (var client = new HttpClient())
+            {
+                // Créer un objet StringContent contenant le corps de la requête JSON
+                var requestBody = new { nom = nom, description = description, prix = prix };
+                var jsonBody = JsonConvert.SerializeObject(requestBody);
+                var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                // Envoyer la requête HTTP POST
+                var response = await client.PostAsync(url, httpContent);
+
+                // Traiter la réponse HTTP
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    MessageBox.Show("Produit ajouté avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Erreur : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            // Effacer les valeurs des champs de saisie
+            edtNomProduit.Text = "";
+            edtDescriptionProduit.Text = "";
+            edtPrixProduit.Text = "";
+        }
+
     }
 }

@@ -24,3 +24,4 @@ C:\Users\MrTroxy\source\repos\ProjetCommerce\bin\Debug\net6.0-windows\runtimes\w
 C:\Users\MrTroxy\source\repos\ProjetCommerce\obj\Debug\net6.0-windows\ProjetCommerce.csproj.CopyComplete
 C:\Users\MrTroxy\source\repos\ProjetCommerce\bin\Debug\net6.0-windows\BarcodeStandard.dll
 C:\Users\MrTroxy\source\repos\ProjetCommerce\obj\Debug\net6.0-windows\ProjetCommerce.Properties.Resources.resources
+C:\Users\MrTroxy\source\repos\ProjetCommerce\bin\Debug\net6.0-windows\Newtonsoft.Json.dll
