@@ -2,6 +2,7 @@ using BarcodeLib;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Drawing.Printing;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace ProjetCommerce
@@ -224,6 +225,8 @@ namespace ProjetCommerce
             // Créer un objet HttpClient
             using (var client = new HttpClient())
             {
+                // Ajouter l'en-tête d'autorisation à la requête HTTP
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 // Créer un objet StringContent contenant le corps de la requête JSON
                 var requestBody = new { nom = nom, description = description, prix = prix };
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
