@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             texteFacture = new RichTextBox();
@@ -35,11 +36,16 @@
             btnViderListeItems = new Button();
             listeItemsScannes = new ListBox();
             button2 = new Button();
-            edtItemSanne = new TextBox();
+            edtItemScanne = new TextBox();
             btnImprimer = new Button();
             btnAjouter = new Button();
             button1 = new Button();
             tabPage2 = new TabPage();
+            button4 = new Button();
+            edtQuantiteProduit = new TextBox();
+            label8 = new Label();
+            edtDescriptionProduit = new TextBox();
+            label6 = new Label();
             btnAjouterProduit = new Button();
             edtPrixProduit = new TextBox();
             edtNomProduit = new TextBox();
@@ -48,6 +54,7 @@
             listeProduits = new ListView();
             colonneId = new ColumnHeader();
             colonneNom = new ColumnHeader();
+            colonneQuantite = new ColumnHeader();
             colonnePrix = new ColumnHeader();
             label4 = new Label();
             btnImprimerCodeBarre = new Button();
@@ -64,8 +71,6 @@
             edtMotDePasse = new TextBox();
             edtUsager = new TextBox();
             lblTitreConnexion = new Label();
-            edtDescriptionProduit = new TextBox();
-            label6 = new Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -93,7 +98,7 @@
             tabPage1.Controls.Add(btnViderListeItems);
             tabPage1.Controls.Add(listeItemsScannes);
             tabPage1.Controls.Add(button2);
-            tabPage1.Controls.Add(edtItemSanne);
+            tabPage1.Controls.Add(edtItemScanne);
             tabPage1.Controls.Add(btnImprimer);
             tabPage1.Controls.Add(btnAjouter);
             tabPage1.Controls.Add(button1);
@@ -154,14 +159,14 @@
             button2.Text = "Items scannés :";
             button2.UseVisualStyleBackColor = true;
             // 
-            // edtItemSanne
+            // edtItemScanne
             // 
-            edtItemSanne.Location = new Point(435, 61);
-            edtItemSanne.Name = "edtItemSanne";
-            edtItemSanne.Size = new Size(341, 32);
-            edtItemSanne.TabIndex = 4;
-            edtItemSanne.TextChanged += edtItemSanne_TextChanged;
-            edtItemSanne.KeyPress += edtItemSanne_KeyPress;
+            edtItemScanne.Location = new Point(435, 61);
+            edtItemScanne.Name = "edtItemScanne";
+            edtItemScanne.Size = new Size(341, 32);
+            edtItemScanne.TabIndex = 4;
+            edtItemScanne.TextChanged += edtItemSanne_TextChanged;
+            edtItemScanne.KeyPress += edtItemSanne_KeyPress;
             // 
             // btnImprimer
             // 
@@ -196,6 +201,9 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(button4);
+            tabPage2.Controls.Add(edtQuantiteProduit);
+            tabPage2.Controls.Add(label8);
             tabPage2.Controls.Add(edtDescriptionProduit);
             tabPage2.Controls.Add(label6);
             tabPage2.Controls.Add(btnAjouterProduit);
@@ -219,9 +227,51 @@
             tabPage2.Text = "Inventaire";
             tabPage2.UseVisualStyleBackColor = true;
             // 
+            // button4
+            // 
+            button4.Location = new Point(492, 410);
+            button4.Name = "button4";
+            button4.Size = new Size(148, 81);
+            button4.TabIndex = 19;
+            button4.Text = "Obtenir liste produits";
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
+            // 
+            // edtQuantiteProduit
+            // 
+            edtQuantiteProduit.Location = new Point(492, 114);
+            edtQuantiteProduit.Name = "edtQuantiteProduit";
+            edtQuantiteProduit.Size = new Size(154, 32);
+            edtQuantiteProduit.TabIndex = 18;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(393, 117);
+            label8.Name = "label8";
+            label8.Size = new Size(94, 25);
+            label8.TabIndex = 17;
+            label8.Text = "Quantité :";
+            // 
+            // edtDescriptionProduit
+            // 
+            edtDescriptionProduit.Location = new Point(506, 76);
+            edtDescriptionProduit.Name = "edtDescriptionProduit";
+            edtDescriptionProduit.Size = new Size(140, 32);
+            edtDescriptionProduit.TabIndex = 16;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(393, 79);
+            label6.Name = "label6";
+            label6.Size = new Size(117, 25);
+            label6.TabIndex = 15;
+            label6.Text = "Description :";
+            // 
             // btnAjouterProduit
             // 
-            btnAjouterProduit.Location = new Point(393, 152);
+            btnAjouterProduit.Location = new Point(393, 196);
             btnAjouterProduit.Name = "btnAjouterProduit";
             btnAjouterProduit.Size = new Size(253, 42);
             btnAjouterProduit.TabIndex = 14;
@@ -231,7 +281,7 @@
             // 
             // edtPrixProduit
             // 
-            edtPrixProduit.Location = new Point(461, 114);
+            edtPrixProduit.Location = new Point(461, 154);
             edtPrixProduit.Name = "edtPrixProduit";
             edtPrixProduit.Size = new Size(185, 32);
             edtPrixProduit.TabIndex = 13;
@@ -246,7 +296,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(393, 117);
+            label7.Location = new Point(393, 157);
             label7.Name = "label7";
             label7.Size = new Size(53, 25);
             label7.TabIndex = 10;
@@ -263,7 +313,7 @@
             // 
             // listeProduits
             // 
-            listeProduits.Columns.AddRange(new ColumnHeader[] { colonneId, colonneNom, colonnePrix });
+            listeProduits.Columns.AddRange(new ColumnHeader[] { colonneId, colonneNom, colonneQuantite, colonnePrix });
             listeProduits.Location = new Point(652, 78);
             listeProduits.Name = "listeProduits";
             listeProduits.Size = new Size(477, 449);
@@ -274,12 +324,16 @@
             // colonneId
             // 
             colonneId.Text = "ID";
-            colonneId.Width = 80;
             // 
             // colonneNom
             // 
             colonneNom.Text = "Nom";
-            colonneNom.Width = 290;
+            colonneNom.Width = 250;
+            // 
+            // colonneQuantite
+            // 
+            colonneQuantite.Text = "Quantitée";
+            colonneQuantite.Width = 100;
             // 
             // colonnePrix
             // 
@@ -431,22 +485,6 @@
             lblTitreConnexion.TabIndex = 0;
             lblTitreConnexion.Text = "Connexion a l'application";
             // 
-            // edtDescriptionProduit
-            // 
-            edtDescriptionProduit.Location = new Point(506, 76);
-            edtDescriptionProduit.Name = "edtDescriptionProduit";
-            edtDescriptionProduit.Size = new Size(140, 32);
-            edtDescriptionProduit.TabIndex = 16;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(393, 79);
-            label6.Name = "label6";
-            label6.Size = new Size(117, 25);
-            label6.TabIndex = 15;
-            label6.Text = "Description :";
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -454,6 +492,7 @@
             ClientSize = new Size(1178, 614);
             Controls.Add(panelGestion);
             Controls.Add(panelConnexion);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Application de Gestion de Commerce";
@@ -478,7 +517,7 @@
         private Button btnImprimer;
         private Button btnAjouter;
         private Button button2;
-        private TextBox edtItemSanne;
+        private TextBox edtItemScanne;
         private ListBox listeItemsScannes;
         private Label label1;
         private TextBox edtTexteCodeBarre;
@@ -509,5 +548,9 @@
         private ColumnHeader colonnePrix;
         private TextBox edtDescriptionProduit;
         private Label label6;
+        private TextBox edtQuantiteProduit;
+        private Label label8;
+        private Button button4;
+        private ColumnHeader colonneQuantite;
     }
 }

@@ -1,9 +1,11 @@
 using BarcodeLib;
 using Newtonsoft.Json;
+using ProjetCommerce.Objets;
 using System.Collections;
 using System.Drawing.Printing;
 using System.Net.Http.Headers;
 using System.Text;
+using static ProjetCommerce.Objets.Produit;
 
 namespace ProjetCommerce
 {
@@ -36,14 +38,21 @@ namespace ProjetCommerce
 
         private void btnAjouter_Click(object sender, EventArgs e)
         {
-            listeItemsScannes.Items.Add(edtItemSanne.Text);
-            edtItemSanne.Clear();
-            edtItemSanne.Focus();
+            if (edtItemScanne.Text.Length > 0)
+            {
+                listeItemsScannes.Items.Add(edtItemScanne.Text);
+                edtItemScanne.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Veuillez entrer un item à ajouter à la liste.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            edtItemScanne.Focus();
         }
 
         private void edtItemSanne_TextChanged(object sender, EventArgs e)
         {
-            if (edtItemSanne.Text.EndsWith("\r") || edtItemSanne.Text.EndsWith("\n"))
+            if (edtItemScanne.Text.EndsWith("\r") || edtItemScanne.Text.EndsWith("\n"))
             {
                 btnAjouter.PerformClick();
             }
@@ -72,7 +81,7 @@ namespace ProjetCommerce
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            edtItemSanne.Focus();
+            edtItemScanne.Focus();
             AcceptButton = btnConnexion;
         }
 
@@ -155,7 +164,7 @@ namespace ProjetCommerce
                     // Changer de page
                     panelConnexion.Visible = false;
                     panelGestion.Visible = true;
-                    edtItemSanne.Focus();
+                    edtItemScanne.Focus();
                     AcceptButton = btnAjouter;
 
                     // Utiliser le token pour accéder à d'autres ressources protégées
@@ -179,7 +188,7 @@ namespace ProjetCommerce
         {
             if (tabControl1.SelectedIndex == 0)
             {
-                edtItemSanne.Focus();
+                edtItemScanne.Focus();
             }
         }
 
@@ -218,6 +227,7 @@ namespace ProjetCommerce
             // Récupérer les valeurs des champs nom, description et prix
             var nom = edtNomProduit.Text;
             var prix = double.Parse(edtPrixProduit.Text);
+            var quantite = int.Parse(edtQuantiteProduit.Text);
             var description = edtDescriptionProduit.Text;
 
             var url = "http://api.qc-ca.ovh:2222/api/ajouter/produit";
@@ -226,9 +236,9 @@ namespace ProjetCommerce
             using (var client = new HttpClient())
             {
                 // Ajouter l'en-tête d'autorisation à la requête HTTP
-                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
                 // Créer un objet StringContent contenant le corps de la requête JSON
-                var requestBody = new { nom = nom, description = description, prix = prix };
+                var requestBody = new { nom = nom, description = description, quantite = quantite, prix = prix };
                 var jsonBody = JsonConvert.SerializeObject(requestBody);
                 var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
@@ -251,8 +261,51 @@ namespace ProjetCommerce
             // Effacer les valeurs des champs de saisie
             edtNomProduit.Text = "";
             edtDescriptionProduit.Text = "";
+            edtQuantiteProduit.Text = "";
             edtPrixProduit.Text = "";
         }
 
+        private async Task<List<Produit>> ObtenirProduits(string token)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://api.qc-ca.ovh:2222");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+
+                var response = await client.GetAsync("/api/produits/obtenir");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var produits = JsonConvert.DeserializeObject<List<Produit>>(json);
+                    return produits;
+                }
+                else
+                {
+                    MessageBox.Show("Erreur lors de la récupération de la liste des produits. Code: " + response.StatusCode);
+                    return null;
+                }
+            }
+        }
+
+        private async void button4_Click(object sender, EventArgs e)
+        {
+            var produits = await ObtenirProduits(token);
+
+            if (produits != null)
+            {
+                listeProduits.Items.Clear();
+                foreach (var produit in produits)
+                {
+                    var item = new ListViewItem(produit.Id.ToString());
+                    item.SubItems.Add(produit.Nom);
+                    item.SubItems.Add(produit.Quantite.ToString());
+                    item.SubItems.Add(produit.Prix.ToString());
+                    // Ajoutez d'autres sous-éléments si nécessaire en fonction des propriétés de la classe 'Produit'
+
+                    listeProduits.Items.Add(item);
+                }
+            }
+        }
     }
 }
