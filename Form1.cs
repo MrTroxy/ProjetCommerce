@@ -27,7 +27,9 @@ namespace ProjetCommerce
         private string CreerFacture(IList items)
         {
             StringBuilder creationDeFacture = new StringBuilder();
-            double prixTotal = 0;
+            double sousTotal = 0;
+            const double TPS = 0.05;
+            const double TVQ = 0.09975;
 
             foreach (var item in items)
             {
@@ -38,14 +40,22 @@ namespace ProjetCommerce
                     string ligne = produit.Nom + " : " + produit.Prix.ToString("0.00$");
                     creationDeFacture.AppendLine(ligne);
 
-                    // Mettez à jour le prix total
-                    prixTotal += produit.Prix;
+                    // Mettez à jour le sous-total
+                    sousTotal += produit.Prix;
                 }
             }
 
-            // Ajoutez d'autres informations à la facture, telles que le total et la TVA
-            creationDeFacture.AppendLine("Total : " + prixTotal.ToString("0.00$"));
-            // ...
+            // Calculez les taxes et le total
+            double montantTPS = sousTotal * TPS;
+            double montantTVQ = sousTotal * TVQ;
+            double total = sousTotal + montantTPS + montantTVQ;
+
+            // Ajoutez d'autres informations à la facture, telles que le sous-total, les taxes et le total
+            creationDeFacture.AppendLine();
+            creationDeFacture.AppendLine("Sous-total : " + sousTotal.ToString("0.00$"));
+            creationDeFacture.AppendLine("TPS (5%) : " + montantTPS.ToString("0.00$"));
+            creationDeFacture.AppendLine("TVQ (9.975%) : " + montantTVQ.ToString("0.00$"));
+            creationDeFacture.AppendLine("Total : " + total.ToString("0.00$"));
 
             return creationDeFacture.ToString();
         }
@@ -257,66 +267,88 @@ namespace ProjetCommerce
         private async void btnAjouterProduit_Click(object sender, EventArgs e)
         {
             bool successAjoutProduit;
-            // Récupérer les valeurs des champs nom, description et prix
-            var nom = edtNomProduit.Text;
-            var prix = double.Parse(edtPrixProduit.Text);
-            var quantite = int.Parse(edtQuantiteProduit.Text);
-            var description = edtDescriptionProduit.Text;
 
-            var url = "http://api.qc-ca.ovh:2222/api/ajouter/produit";
-
-            // Créer un objet HttpClient
-            using (var client = new HttpClient())
+            if (edtNomProduit.Text != String.Empty && edtDescriptionProduit.Text == String.Empty && edtPrixProduit.Text.Length > 0 && edtQuantiteProduit.Text.Length > 0)
             {
-                // Ajouter l'en-tête d'autorisation à la requête HTTP
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
-                // Créer un objet StringContent contenant le corps de la requête JSON
-                var requestBody = new { nom = nom, description = description, quantite = quantite, prix = prix };
-                var jsonBody = JsonConvert.SerializeObject(requestBody);
-                var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                // Récupérer les valeurs des champs nom, description et prix
+                var nom = edtNomProduit.Text;
+                var description = edtDescriptionProduit.Text;
 
-                // Envoyer la requête HTTP POST
-                var response = await client.PostAsync(url, httpContent);
+                double prix;
+                int quantite;
 
-                // Traiter la réponse HTTP
-                if (response.IsSuccessStatusCode)
+                bool prixParsed = double.TryParse(edtPrixProduit.Text, out prix);
+                bool quantiteParsed = int.TryParse(edtQuantiteProduit.Text, out quantite);
+
+                if (prixParsed && quantiteParsed)
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    // Obtenir la liste des produits pour la mettre à jour
-                    ObtenirListeProduitsDB();
-                    successAjoutProduit = true;
-                    MessageBox.Show("Produit ajouté avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Les deux valeurs sont valides et parsées avec succès
+                    var url = "http://api.qc-ca.ovh:2222/api/ajouter/produit";
+
+                    // Créer un objet HttpClient
+                    using (var client = new HttpClient())
+                    {
+                        // Ajouter l'en-tête d'autorisation à la requête HTTP
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                        // Créer un objet StringContent contenant le corps de la requête JSON
+                        var requestBody = new { nom = nom, description = description, quantite = quantite, prix = prix };
+                        var jsonBody = JsonConvert.SerializeObject(requestBody);
+                        var httpContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                        // Envoyer la requête HTTP POST
+                        var response = await client.PostAsync(url, httpContent);
+
+                        // Traiter la réponse HTTP
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseContent = await response.Content.ReadAsStringAsync();
+                            var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                            // Obtenir la liste des produits pour la mettre à jour
+                            ObtenirListeProduitsDB();
+                            successAjoutProduit = true;
+                            MessageBox.Show("Produit ajouté avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            successAjoutProduit = false;
+                            MessageBox.Show("Erreur : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+
+                    if (successAjoutProduit)
+                    {
+                        // Obtien le id du produit qui vient d'être ajouté
+                        string idProduit = await ObtenirDernierIdProduit();
+
+                        // Générer le code-barre
+                        // Vérifier si le chemin existe et si non, on le créer
+                        if (!Directory.Exists(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres"))
+                        {
+                            Directory.CreateDirectory(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres");
+                        }
+                        string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + idProduit + ".png";
+
+                        Barcode codeBarre = new Barcode();
+                        Image imgCodeBarre = codeBarre.Encode(TYPE.CODE128, idProduit, Color.Black, Color.White, 400, 100);
+                        imgCodeBarre.Save(chemin, System.Drawing.Imaging.ImageFormat.Png);
+
+                        imageCodeBarre.Image = imgCodeBarre;
+
+                        lblCodeBarreProduitAjoute.Visible = true;
+                        imageCodeBarre.Visible = true;
+                        btnImprimerCodeBarre.Visible = true;
+                    }
                 }
                 else
                 {
-                    successAjoutProduit = false;
-                    MessageBox.Show("Erreur : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // L'une des valeurs n'a pas pu être parsée correctement
+                    MessageBox.Show("Veuillez entrer des valeurs valides pour le prix et la quantité.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-
-            if (successAjoutProduit)
+            else
             {
-                // Obtien le id du produit qui vient d'être ajouté
-                string idProduit = await ObtenirDernierIdProduit();
-
-                // Générer le code-barre
-                // Vérifier si le chemin existe et si non, on le créer
-                if (!Directory.Exists(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres"))
-                {
-                    Directory.CreateDirectory(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres");
-                }
-                string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + idProduit + ".png";
-
-                Barcode codeBarre = new Barcode();
-                Image imgCodeBarre = codeBarre.Encode(TYPE.CODE128, idProduit, Color.Black, Color.White, 400, 100);
-                imgCodeBarre.Save(chemin, System.Drawing.Imaging.ImageFormat.Png);
-
-                imageCodeBarre.Image = imgCodeBarre;
-
-                lblCodeBarreProduitAjoute.Visible = true;
-                imageCodeBarre.Visible = true;
-                btnImprimerCodeBarre.Visible = true;
+                // L'une des valeurs n'a pas pu être parsée correctement
+                MessageBox.Show("Veuillez entrer des valeurs valides pour le prix et la quantité.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
