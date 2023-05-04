@@ -4,6 +4,7 @@ using ProjetCommerce.Objets;
 using System.Collections;
 using System.Drawing.Printing;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using static ProjetCommerce.Objets.Produit;
 
@@ -11,8 +12,11 @@ namespace ProjetCommerce
 {
     public partial class Form1 : Form
     {
+        // Dictionary pour stocker les produits
+        Dictionary<string, Produit> inventaireProduits = new Dictionary<string, Produit>();
         bool usagerConnecte = false;
         string token = "";
+        string dernierIdDeProduitAjoute = "";
 
         public Form1()
         {
@@ -23,14 +27,24 @@ namespace ProjetCommerce
         private string CreerFacture(IList items)
         {
             StringBuilder creationDeFacture = new StringBuilder();
+            double prixTotal = 0;
 
             foreach (var item in items)
             {
-                // Ajoutez les détails de l'élément à la facture (nom, prix, etc.)
-                creationDeFacture.AppendLine(item.ToString());
+                // Utiliser le dictionnaire 'inventaireProduits' pour obtenir les détails du produit en fonction de l'ID scanné
+                if (inventaireProduits.TryGetValue(item.ToString(), out Produit produit))
+                {
+                    // Ajoutez les détails de l'élément à la facture (nom, prix, etc.)
+                    string ligne = produit.Nom + " : " + produit.Prix.ToString("0.00$");
+                    creationDeFacture.AppendLine(ligne);
+
+                    // Mettez à jour le prix total
+                    prixTotal += produit.Prix;
+                }
             }
 
             // Ajoutez d'autres informations à la facture, telles que le total et la TVA
+            creationDeFacture.AppendLine("Total : " + prixTotal.ToString("0.00$"));
             // ...
 
             return creationDeFacture.ToString();
@@ -40,8 +54,25 @@ namespace ProjetCommerce
         {
             if (edtItemScanne.Text.Length > 0)
             {
-                listeItemsScannes.Items.Add(edtItemScanne.Text);
+                // Aller chercher le nom du produit en fonction de l'ID scanné (celui dans edtItemScanne.Text)
+                // Utiliser le dictionnaire 'inventaireProduits' pour obtenir les détails du produit en fonction de l'ID scanné
+                if (inventaireProduits.TryGetValue(edtItemScanne.Text, out Produit produit))
+                {
+                    // Ajouter le nom du produit à la liste
+                    listeItemsScannes.Items.Add(produit.Nom);
+                    listeIDScannesCache.Items.Add(produit.Id);
+                }
+                else
+                {
+                    MessageBox.Show("L'item scanné n'existe pas dans l'inventaire.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
                 edtItemScanne.Clear();
+                // Générer la facture avec la fonction CreerFacture
+                string facture = CreerFacture(listeIDScannesCache.Items);
+                texteFacture.Text = String.Empty;
+                // Afficher la facture dans le champ de texte
+                texteFacture.Text = facture;
             }
             else
             {
@@ -52,30 +83,10 @@ namespace ProjetCommerce
 
         private void edtItemSanne_TextChanged(object sender, EventArgs e)
         {
+            // Vérication pour l'ajout a la liste si l'utilisateur appuie sur Entrée
             if (edtItemScanne.Text.EndsWith("\r") || edtItemScanne.Text.EndsWith("\n"))
             {
                 btnAjouter.PerformClick();
-            }
-        }
-
-        private void btnCreerCodeBarre_Click(object sender, EventArgs e)
-        {
-            // Vérifier que le champ n'est pas vide
-            if (edtTexteCodeBarre.Text.Length > 0)
-            {
-                string texte = edtTexteCodeBarre.Text;
-                // Vérifier si le chemin existe et si non, on le créer
-                if (!Directory.Exists(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres"))
-                {
-                    Directory.CreateDirectory(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres");
-                }
-                string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + texte + ".png";
-
-                Barcode codeBarre = new Barcode();
-                Image imgCodeBarre = codeBarre.Encode(TYPE.CODE128, texte, Color.Black, Color.White, 400, 100);
-                imgCodeBarre.Save(chemin, System.Drawing.Imaging.ImageFormat.Png);
-
-                imageCodeBarre.Image = imgCodeBarre;
             }
         }
 
@@ -97,6 +108,9 @@ namespace ProjetCommerce
         private void btnViderListeItems_Click(object sender, EventArgs e)
         {
             listeItemsScannes.Items.Clear();
+            listeIDScannesCache.Items.Clear();
+            texteFacture.Text = string.Empty;
+            edtItemScanne.Focus();
         }
 
         // Fonction pour générer la facture et l'imprimer
@@ -106,13 +120,19 @@ namespace ProjetCommerce
             if (listeItemsScannes.Items.Count > 0)
             {
                 // Générer la facture avec la fonction CreerFacture
-                string facture = CreerFacture(listeItemsScannes.Items);
+                string facture = CreerFacture(listeIDScannesCache.Items);
 
                 // Créer un objet PrintDocument
                 PrintDocument printDocument = new PrintDocument();
                 printDocument.PrintPage += (s, args) => ImprimerFacture(args, facture);
                 printDocument.Print();
+                texteFacture.Text = facture;
             }
+            else
+            {
+                MessageBox.Show("Veuillez scanner des produits avant de faire cela!", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            edtItemScanne.Focus();
         }
 
         private void ImprimerFacture(PrintPageEventArgs e, string facture)
@@ -168,7 +188,8 @@ namespace ProjetCommerce
                     AcceptButton = btnAjouter;
 
                     // Utiliser le token pour accéder à d'autres ressources protégées
-                    //MessageBox.Show("Connexion réussie !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // Obtention de la liste des produits
+                    ObtenirListeProduitsDB();
                 }
                 else
                 {
@@ -184,17 +205,21 @@ namespace ProjetCommerce
 
         }
 
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        private async void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl1.SelectedIndex == 0)
             {
                 edtItemScanne.Focus();
             }
+            else if (tabControl1.SelectedIndex == 1)
+            {
+                ObtenirListeProduitsDB();
+            }
         }
 
         private void btnImprimerCodeBarre_Click(object sender, EventArgs e)
         {
-            string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + edtTexteCodeBarre.Text + ".png";
+            string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + dernierIdDeProduitAjoute + ".png";
             // Charger l'image à imprimer
             var image = Image.FromFile(chemin);
 
@@ -220,10 +245,18 @@ namespace ProjetCommerce
             {
                 document.Print();
             }
+
+            if (btnImprimerCodeBarre.Visible)
+            {
+                btnImprimerCodeBarre.Visible = false;
+                imageCodeBarre.Visible = false;
+                lblCodeBarreProduitAjoute.Visible = false;
+            }
         }
 
         private async void btnAjouterProduit_Click(object sender, EventArgs e)
         {
+            bool successAjoutProduit;
             // Récupérer les valeurs des champs nom, description et prix
             var nom = edtNomProduit.Text;
             var prix = double.Parse(edtPrixProduit.Text);
@@ -250,19 +283,41 @@ namespace ProjetCommerce
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    // Obtenir la liste des produits pour la mettre à jour
+                    ObtenirListeProduitsDB();
+                    successAjoutProduit = true;
                     MessageBox.Show("Produit ajouté avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
+                    successAjoutProduit = false;
                     MessageBox.Show("Erreur : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
 
-            // Effacer les valeurs des champs de saisie
-            edtNomProduit.Text = "";
-            edtDescriptionProduit.Text = "";
-            edtQuantiteProduit.Text = "";
-            edtPrixProduit.Text = "";
+            if (successAjoutProduit)
+            {
+                // Obtien le id du produit qui vient d'être ajouté
+                string idProduit = await ObtenirDernierIdProduit();
+
+                // Générer le code-barre
+                // Vérifier si le chemin existe et si non, on le créer
+                if (!Directory.Exists(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres"))
+                {
+                    Directory.CreateDirectory(@"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres");
+                }
+                string chemin = @"C:\\Users\\" + Environment.UserName + "\\Pictures\\CodesBarres\\" + idProduit + ".png";
+
+                Barcode codeBarre = new Barcode();
+                Image imgCodeBarre = codeBarre.Encode(TYPE.CODE128, idProduit, Color.Black, Color.White, 400, 100);
+                imgCodeBarre.Save(chemin, System.Drawing.Imaging.ImageFormat.Png);
+
+                imageCodeBarre.Image = imgCodeBarre;
+
+                lblCodeBarreProduitAjoute.Visible = true;
+                imageCodeBarre.Visible = true;
+                btnImprimerCodeBarre.Visible = true;
+            }
         }
 
         private async Task<List<Produit>> ObtenirProduits(string token)
@@ -288,24 +343,127 @@ namespace ProjetCommerce
             }
         }
 
-        private async void button4_Click(object sender, EventArgs e)
+        // Méthode pour obtenir la liste des produits
+        private async void ObtenirListeProduitsDB()
         {
             var produits = await ObtenirProduits(token);
-
             if (produits != null)
             {
                 listeProduits.Items.Clear();
+                inventaireProduits.Clear();
                 foreach (var produit in produits)
                 {
+                    inventaireProduits[produit.Id.ToString()] = produit;
                     var item = new ListViewItem(produit.Id.ToString());
                     item.SubItems.Add(produit.Nom);
                     item.SubItems.Add(produit.Quantite.ToString());
-                    item.SubItems.Add(produit.Prix.ToString());
-                    // Ajoutez d'autres sous-éléments si nécessaire en fonction des propriétés de la classe 'Produit'
-
+                    item.SubItems.Add(produit.Prix.ToString("0.00$"));
                     listeProduits.Items.Add(item);
                 }
             }
+        }
+
+        private async void btnSupprimerProduit_Click(object sender, EventArgs e)
+        {
+            // Vérifier qu'un élément est sélectionné dans la ListView
+            if (listeProduits.SelectedItems.Count > 0)
+            {
+                // Appel de l'API pour supprimer le produit (en POST)
+                var id = listeProduits.SelectedItems[0].Text;
+                var url = "http://api.qc-ca.ovh:2222/api/supprimer/produit";
+
+                using (var client = new HttpClient())
+                {
+                    // Ajouter le token d'autorisation au client
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+
+                    var content = new StringContent(JsonConvert.SerializeObject(new { id = id }), Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(url, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        ObtenirListeProduitsDB();
+                        MessageBox.Show("Produit supprimé avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Erreur : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Veuillez sélectionner le ID du produit à supprimer.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnInformationProduit_Click(object sender, EventArgs e)
+        {
+            // Vérifier qu'un élément est sélectionné dans la ListView
+            if (listeProduits.SelectedItems.Count > 0)
+            {
+                // Récupérer l'ID du produit sélectionné
+                var id = listeProduits.SelectedItems[0].Text;
+
+                // Recherchez le produit dans le dictionnaire en utilisant l'ID
+                if (inventaireProduits.TryGetValue(id, out Produit produit))
+                {
+                    // Récupérer les informations du produit à partir du dictionnaire
+                    var nom = produit.Nom;
+                    var description = produit.Description;
+                    var quantite = produit.Quantite;
+                    var prix = produit.Prix;
+
+                    var message = $"ID: {id}\nNom: {nom}\nDescription: {description}\nQuantité: {quantite}\nPrix: {prix}";
+
+                    // Afficher le MessageBox avec les informations du produit
+                    MessageBox.Show(message, "Informations produit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Le produit sélectionné est introuvable dans le dictionnaire.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Veuillez sélectionner le ID d'un produit dans la liste pour afficher ses informations.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async Task<string> ObtenirDernierIdProduit()
+        {
+            string dernierId = "";
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                string url = "http://api.qc-ca.ovh:2222/api/produits/dernier";
+
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonContent = await response.Content.ReadAsStringAsync();
+                    var resultat = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                    dernierId = resultat.id;
+                    dernierIdDeProduitAjoute = dernierId;
+                }
+                else
+                {
+                    MessageBox.Show("Erreur lors de la récupération du dernier ID de produit : " + response.StatusCode, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            return dernierId;
+        }
+
+        private void btnViderChampsProduit_Click(object sender, EventArgs e)
+        {
+            // Effacer les valeurs des champs de saisie
+            edtNomProduit.Text = "";
+            edtDescriptionProduit.Text = "";
+            edtQuantiteProduit.Text = "";
+            edtPrixProduit.Text = "";
         }
     }
 }
