@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            listPorts = new ComboBox();
             listeIDScannesCache = new ListBox();
             texteFacture = new RichTextBox();
             button3 = new Button();
@@ -93,6 +94,7 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(listPorts);
             tabPage1.Controls.Add(listeIDScannesCache);
             tabPage1.Controls.Add(texteFacture);
             tabPage1.Controls.Add(button3);
@@ -111,6 +113,15 @@
             tabPage1.Text = "Caisse";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // listPorts
+            // 
+            listPorts.FormattingEnabled = true;
+            listPorts.Location = new Point(759, 659);
+            listPorts.Name = "listPorts";
+            listPorts.Size = new Size(28, 33);
+            listPorts.TabIndex = 11;
+            listPorts.Visible = false;
+            // 
             // listeIDScannesCache
             // 
             listeIDScannesCache.FormattingEnabled = true;
@@ -125,6 +136,7 @@
             // 
             texteFacture.Location = new Point(808, 64);
             texteFacture.Name = "texteFacture";
+            texteFacture.ReadOnly = true;
             texteFacture.Size = new Size(404, 558);
             texteFacture.TabIndex = 9;
             texteFacture.Text = "";
@@ -562,5 +574,6 @@
         private ListBox listeIDScannesCache;
         private RichTextBox edtDescriptionProduit;
         private Button btnViderChampsProduit;
+        private ComboBox listPorts;
     }
 }

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using ProjetCommerce.Objets;
 using System.Collections;
 using System.Drawing.Printing;
+using System.IO.Ports;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -30,6 +31,14 @@ namespace ProjetCommerce
             double sousTotal = 0;
             const double TPS = 0.05;
             const double TVQ = 0.09975;
+            string dateActuelleEtHeure = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+            creationDeFacture.AppendLine(" - ");
+            creationDeFacture.AppendLine("Facture de la boutique");
+            creationDeFacture.AppendLine("No de Facture : #" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+            creationDeFacture.AppendLine(" - ");
+            creationDeFacture.AppendLine("Items : ");
+            creationDeFacture.AppendLine(" - ");
 
             foreach (var item in items)
             {
@@ -51,11 +60,14 @@ namespace ProjetCommerce
             double total = sousTotal + montantTPS + montantTVQ;
 
             // Ajoutez d'autres informations à la facture, telles que le sous-total, les taxes et le total
-            creationDeFacture.AppendLine();
+            creationDeFacture.AppendLine(" - ");
             creationDeFacture.AppendLine("Sous-total : " + sousTotal.ToString("0.00$"));
             creationDeFacture.AppendLine("TPS (5%) : " + montantTPS.ToString("0.00$"));
             creationDeFacture.AppendLine("TVQ (9.975%) : " + montantTVQ.ToString("0.00$"));
             creationDeFacture.AppendLine("Total : " + total.ToString("0.00$"));
+            creationDeFacture.AppendLine(" - ");
+            creationDeFacture.AppendLine("Merci d'avoir magasiné chez nous!");
+            creationDeFacture.AppendLine("Date : " + dateActuelleEtHeure);
 
             return creationDeFacture.ToString();
         }
@@ -137,6 +149,9 @@ namespace ProjetCommerce
                 printDocument.PrintPage += (s, args) => ImprimerFacture(args, facture);
                 printDocument.Print();
                 texteFacture.Text = facture;
+
+                // Ouvrir le tiroir-caisse
+                OuvrirTiroirCaisse();
             }
             else
             {
@@ -147,9 +162,9 @@ namespace ProjetCommerce
 
         private void ImprimerFacture(PrintPageEventArgs e, string facture)
         {
-            Font police = new Font("Arial", 12);
-            float margeGauche = e.MarginBounds.Left;
-            float margeSuperieure = e.MarginBounds.Top;
+            Font police = new Font("Helvetica", 10);
+            float margeGauche = 5;
+            float margeSuperieure = 0;
 
             using (StringReader lecteur = new StringReader(facture))
             {
@@ -161,6 +176,48 @@ namespace ProjetCommerce
                     margeSuperieure += tailleLigne.Height;
                 }
             }
+        }
+
+        private void OuvrirTiroirCaisse()
+        {
+            // Créer une instance de la classe SerialPort
+            SerialPort serialPort = new SerialPort();
+
+            // Récupérer la liste des ports COM disponibles
+            string[] ports = SerialPort.GetPortNames();
+
+            // Si aucun port n'est trouvé, afficher un message d'erreur
+            if (ports.Length == 0)
+            {
+                MessageBox.Show("Le tiroir caisse n'est pas branché!");
+            }
+            else
+            {
+                // Sélectionner automatiquement le premier port COM disponible
+                serialPort.PortName = ports[0];
+                foreach (string port in ports)
+                {
+                    serialPort.PortName = port;
+                    listPorts.Items.Add(port);
+                }
+                listPorts.SelectedIndex = 0;
+
+                SerialPort rsPort = new SerialPort(listPorts.Text);
+
+                byte[] openCmd = new byte[5];
+                openCmd[0] = 27;
+                openCmd[1] = 112;
+                openCmd[2] = 0;
+                openCmd[3] = 60;
+                openCmd[4] = 255;
+
+                rsPort.Open();
+                Thread.Sleep(100);
+                rsPort.Write(openCmd, 0, 5);
+                Thread.Sleep(100);
+                rsPort.Close();
+            }
+
         }
 
         private async void btnConnexion_Click(object sender, EventArgs e)
@@ -268,19 +325,27 @@ namespace ProjetCommerce
         {
             bool successAjoutProduit;
 
-            if (edtNomProduit.Text != String.Empty && edtDescriptionProduit.Text == String.Empty && edtPrixProduit.Text.Length > 0 && edtQuantiteProduit.Text.Length > 0)
+            if (edtNomProduit.Text != String.Empty && edtDescriptionProduit.Text != String.Empty && edtPrixProduit.Text != String.Empty && edtQuantiteProduit.Text != String.Empty)
             {
                 // Récupérer les valeurs des champs nom, description et prix
                 var nom = edtNomProduit.Text;
                 var description = edtDescriptionProduit.Text;
+                double prix = 0;
+                int quantite = 0;
+                bool parsed = false;
 
-                double prix;
-                int quantite;
+                try
+                {
+                    prix = double.Parse(edtPrixProduit.Text);
+                    quantite = int.Parse(edtQuantiteProduit.Text);
+                    parsed = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
 
-                bool prixParsed = double.TryParse(edtPrixProduit.Text, out prix);
-                bool quantiteParsed = int.TryParse(edtQuantiteProduit.Text, out quantite);
-
-                if (prixParsed && quantiteParsed)
+                if (parsed)
                 {
                     // Les deux valeurs sont valides et parsées avec succès
                     var url = "http://api.qc-ca.ovh:2222/api/ajouter/produit";
@@ -339,16 +404,10 @@ namespace ProjetCommerce
                         btnImprimerCodeBarre.Visible = true;
                     }
                 }
-                else
-                {
-                    // L'une des valeurs n'a pas pu être parsée correctement
-                    MessageBox.Show("Veuillez entrer des valeurs valides pour le prix et la quantité.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
             else
             {
-                // L'une des valeurs n'a pas pu être parsée correctement
-                MessageBox.Show("Veuillez entrer des valeurs valides pour le prix et la quantité.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Veuillez remplir tout les champs pour ajouter un produit.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
