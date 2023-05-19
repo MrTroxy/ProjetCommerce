@@ -65,9 +65,11 @@
             imageCodeBarre = new PictureBox();
             lblCodeBarreProduitAjoute = new Label();
             tabPage3 = new TabPage();
-            listView1 = new ListView();
+            button4 = new Button();
+            listeJetons = new ListView();
             columnHeader2 = new ColumnHeader();
             columnHeader3 = new ColumnHeader();
+            columnHeader1 = new ColumnHeader();
             label1 = new Label();
             panelGestion = new Panel();
             panelConnexion = new Panel();
@@ -432,7 +434,8 @@
             // 
             // tabPage3
             // 
-            tabPage3.Controls.Add(listView1);
+            tabPage3.Controls.Add(button4);
+            tabPage3.Controls.Add(listeJetons);
             tabPage3.Controls.Add(label1);
             tabPage3.Location = new Point(4, 34);
             tabPage3.Name = "tabPage3";
@@ -441,30 +444,45 @@
             tabPage3.Text = "Gestion entrées/sorties";
             tabPage3.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // button4
             // 
-            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader2, columnHeader3 });
-            listView1.Location = new Point(8, 35);
-            listView1.Name = "listView1";
-            listView1.Size = new Size(554, 677);
-            listView1.TabIndex = 9;
-            listView1.UseCompatibleStateImageBehavior = false;
-            listView1.View = View.Details;
+            button4.Location = new Point(882, 35);
+            button4.Name = "button4";
+            button4.Size = new Size(272, 58);
+            button4.TabIndex = 20;
+            button4.Text = "Actualiser";
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
+            // 
+            // listeJetons
+            // 
+            listeJetons.Columns.AddRange(new ColumnHeader[] { columnHeader2, columnHeader3, columnHeader1 });
+            listeJetons.Location = new Point(8, 35);
+            listeJetons.Name = "listeJetons";
+            listeJetons.Size = new Size(784, 677);
+            listeJetons.TabIndex = 9;
+            listeJetons.UseCompatibleStateImageBehavior = false;
+            listeJetons.View = View.Details;
             // 
             // columnHeader2
             // 
-            columnHeader2.Text = "Nom de l'utilisateur";
-            columnHeader2.Width = 260;
+            columnHeader2.Text = "Numéro de jeton";
+            columnHeader2.Width = 240;
             // 
             // columnHeader3
             // 
-            columnHeader3.Text = "Date d'utilisation du jeton";
-            columnHeader3.Width = 290;
+            columnHeader3.Text = "Nom";
+            columnHeader3.Width = 240;
+            // 
+            // columnHeader1
+            // 
+            columnHeader1.Text = "Date";
+            columnHeader1.Width = 300;
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(104, 7);
+            label1.Location = new Point(228, 7);
             label1.Name = "label1";
             label1.Size = new Size(322, 25);
             label1.TabIndex = 8;
@@ -625,9 +643,11 @@
         private Button btnViderChampsProduit;
         private ComboBox listPorts;
         private TabPage tabPage3;
-        private ListView listView1;
+        private ListView listeJetons;
         private ColumnHeader columnHeader2;
         private ColumnHeader columnHeader3;
         private Label label1;
+        private ColumnHeader columnHeader1;
+        private Button button4;
     }
 }

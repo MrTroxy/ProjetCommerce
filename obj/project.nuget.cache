@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RuESShurTeybJ0IfTH/JjZRXcUZsWG0RnfAKsjH9f5BrpFb28I4oLxeZkIDisduW58KPJ/U9uelESopty8U+Ww==",
+  "dgSpecHash": "N3Y3r+/4dBcppaUdMz44ESmD7wOXfG10HjkgfM0RBDQ8aEKzA7rAk5gTF7taMvTF0SSWvwSF8SxBtJWQaGYeFA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\ProjetCommerce.csproj",
+  "projectFilePath": "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MrTroxy\\.nuget\\packages\\barcodelib\\2.4.0\\barcodelib.2.4.0.nupkg.sha512",
     "C:\\Users\\MrTroxy\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",

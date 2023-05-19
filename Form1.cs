@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using static ProjetCommerce.Objets.Produit;
+using static ProjetCommerce.Objets.Jeton;
 
 namespace ProjetCommerce
 {
@@ -282,6 +283,10 @@ namespace ProjetCommerce
             {
                 ObtenirListeProduitsDB();
             }
+            else if (tabControl1.SelectedIndex == 2)
+            {
+                ObtenirListeJetonsDB();
+            }
         }
 
         private void btnImprimerCodeBarre_Click(object sender, EventArgs e)
@@ -454,6 +459,46 @@ namespace ProjetCommerce
             }
         }
 
+        private async Task<List<Jeton>> ObtenirJetons(string token)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://api.qc-ca.ovh:2222");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+
+                var response = await client.GetAsync("/api/jetons/obtenir");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var jetons = JsonConvert.DeserializeObject<List<Jeton>>(json);
+                    return jetons;
+                }
+                else
+                {
+                    MessageBox.Show("Erreur lors de la récupération de la liste des jetons. Code: " + response.StatusCode);
+                    return null;
+                }
+            }
+        }
+
+        // Méthode pour obtenir la liste des jetons et les mettre dans la ListView
+        private async void ObtenirListeJetonsDB()
+        {
+            var jetons = await ObtenirJetons(token);
+            if (jetons != null)
+            {
+                listeJetons.Items.Clear();
+                foreach (var jeton in jetons)
+                {
+                    var item = new ListViewItem(jeton.Numtag);
+                    item.SubItems.Add(jeton.Nom);
+                    item.SubItems.Add(jeton.Date.ToString());
+                    listeJetons.Items.Add(item);
+                }
+            }
+        }
+
         private async void btnSupprimerProduit_Click(object sender, EventArgs e)
         {
             // Vérifier qu'un élément est sélectionné dans la ListView
@@ -555,6 +600,11 @@ namespace ProjetCommerce
             edtDescriptionProduit.Text = "";
             edtQuantiteProduit.Text = "";
             edtPrixProduit.Text = "";
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            ObtenirListeJetonsDB();
         }
     }
 }
