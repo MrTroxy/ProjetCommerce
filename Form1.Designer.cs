@@ -64,6 +64,11 @@
             btnImprimerCodeBarre = new Button();
             imageCodeBarre = new PictureBox();
             lblCodeBarreProduitAjoute = new Label();
+            tabPage3 = new TabPage();
+            listView1 = new ListView();
+            columnHeader2 = new ColumnHeader();
+            columnHeader3 = new ColumnHeader();
+            label1 = new Label();
             panelGestion = new Panel();
             panelConnexion = new Panel();
             btnConnexion = new Button();
@@ -76,6 +81,7 @@
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)imageCodeBarre).BeginInit();
+            tabPage3.SuspendLayout();
             panelGestion.SuspendLayout();
             panelConnexion.SuspendLayout();
             SuspendLayout();
@@ -84,6 +90,7 @@
             // 
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPage3);
             tabControl1.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
@@ -423,6 +430,46 @@
             lblCodeBarreProduitAjoute.Text = "Voici le code barre généré pour le produit ajouté :";
             lblCodeBarreProduitAjoute.Visible = false;
             // 
+            // tabPage3
+            // 
+            tabPage3.Controls.Add(listView1);
+            tabPage3.Controls.Add(label1);
+            tabPage3.Location = new Point(4, 34);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Size = new Size(1244, 715);
+            tabPage3.TabIndex = 2;
+            tabPage3.Text = "Gestion entrées/sorties";
+            tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // listView1
+            // 
+            listView1.Columns.AddRange(new ColumnHeader[] { columnHeader2, columnHeader3 });
+            listView1.Location = new Point(8, 35);
+            listView1.Name = "listView1";
+            listView1.Size = new Size(554, 677);
+            listView1.TabIndex = 9;
+            listView1.UseCompatibleStateImageBehavior = false;
+            listView1.View = View.Details;
+            // 
+            // columnHeader2
+            // 
+            columnHeader2.Text = "Nom de l'utilisateur";
+            columnHeader2.Width = 260;
+            // 
+            // columnHeader3
+            // 
+            columnHeader3.Text = "Date d'utilisation du jeton";
+            columnHeader3.Width = 290;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(104, 7);
+            label1.Name = "label1";
+            label1.Size = new Size(322, 25);
+            label1.TabIndex = 8;
+            label1.Text = "Liste des entrées et sorties des jetons";
+            // 
             // panelGestion
             // 
             panelGestion.Controls.Add(tabControl1);
@@ -525,6 +572,8 @@
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)imageCodeBarre).EndInit();
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
             panelGestion.ResumeLayout(false);
             panelConnexion.ResumeLayout(false);
             panelConnexion.PerformLayout();
@@ -575,5 +624,10 @@
         private RichTextBox edtDescriptionProduit;
         private Button btnViderChampsProduit;
         private ComboBox listPorts;
+        private TabPage tabPage3;
+        private ListView listView1;
+        private ColumnHeader columnHeader2;
+        private ColumnHeader columnHeader3;
+        private Label label1;
     }
 }

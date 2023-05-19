@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj": {}
+    "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\ProjetCommerce.csproj": {}
   },
   "projects": {
-    "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj": {
+    "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\ProjetCommerce.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj",
+        "projectUniqueName": "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\ProjetCommerce.csproj",
         "projectName": "ProjetCommerce",
-        "projectPath": "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\ProjetCommerce.csproj",
+        "projectPath": "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\ProjetCommerce.csproj",
         "packagesPath": "C:\\Users\\MrTroxy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\MrTroxy\\source\\repos\\ProjetCommerce\\obj\\",
+        "outputPath": "C:\\Users\\MrTroxy\\Desktop\\Projects\\ProjetCommerce\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -81,7 +80,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
         }
       }
     }
